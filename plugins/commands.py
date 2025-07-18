@@ -224,11 +224,11 @@ async def start(client, message):
             settings = await get_settings(int(data.split("_", 2)[1]))
             fsub_channels = settings.get('fsub', AUTH_CHANNELS) if settings else AUTH_CHANNELS
             btn = []
-            dreamxbotz_btn = await is_subscribed(client, message, fsub_channels)
-            if dreamxbotz_btn:
-                btn.extend(dreamxbotz_btn)
-            dreamxbotz_joined = await is_req_subscribed(client, message)
-            if not dreamxbotz_joined:
+            DrBerlin_bot_btn = await is_subscribed(client, message, fsub_channels)
+            if DrBerlin_bot_btn:
+                btn.extend(DrBerlin_bot_btn)
+            DrBerlin_bot_joined = await is_req_subscribed(client, message)
+            if not DrBerlin_bot_joined:
                 try:
                     invite_link_default = await client.create_chat_invite_link(int(AUTH_REQ_CHANNEL), creates_join_request=True)
                 except ChatAdminRequired:
@@ -1039,7 +1039,7 @@ async def set_tutorial(client, message: Message):
     except IndexError:
         return await message.reply_text(
             f"<b>ᴄᴏᴍᴍᴀɴᴅ ɪɴᴄᴏᴍᴘʟᴇᴛᴇ !!\n\nᴜꜱᴇ ʟɪᴋᴇ ᴛʜɪꜱ -</b>\n\n"
-            f"<code>/{message.command[0]} https://t.me/dreamxbotz</code>"
+            f"<code>/{message.command[0]} https://t.me/DrBerlin_bot</code>"
         )
     if message.command[0] == "set_tutorial":
         tutorial_key = "tutorial"
