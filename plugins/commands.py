@@ -80,7 +80,7 @@ async def start(client, message):
         await dlt.delete()
         return         
     if message.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
-        buttons = ([
+        buttons = [
     [
         InlineKeyboardButton("🎬 Send your favorite movie name", url="https://t.me/DrBerlin_bot")
     ]
