@@ -97,7 +97,7 @@ ABOVE_PREVIEW = bool(environ.get('ABOVE_PREVIEW', True)) # Shows link preview ab
 # ============================
 IS_VERIFY = is_enabled('IS_VERIFY', False)  # Verification On (True) / Off (False)
 LOG_VR_CHANNEL = int(environ.get('LOG_VR_CHANNEL', '-1002388027077')) #Verification Channel Id 
-LOG_API_CHANNEL = int(environ.get('LOG_API_CHANNEL', '')) -1002388027077#If Anyone Set Your Bot In Any Group And Set Shortner In That Group Then In This Channel The All Details Come
+LOG_API_CHANNEL = int(environ.get('LOG_API_CHANNEL', ''))#If Anyone Set Your Bot In Any Group And Set Shortner In That Group Then In This Channel The All Details Come
 VERIFY_IMG = environ.get("VERIFY_IMG", "https://telegra.ph/file/9ecc5d6e4df5b83424896.jpg")
 
 TUTORIAL = environ.get("TUTORIAL", "https://t.me/DrBerlin_bot")   # Tutorial link for verification
