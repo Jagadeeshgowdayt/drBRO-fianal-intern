@@ -208,7 +208,7 @@ Nᴀᴍᴇ : {}
 
 Mᴇꜱꜱᴀɢᴇ : <b>{}</b>"""
     
-    CAPTION = """<b><a href="https://t.me/DrBerlin_bot">{file_name}</a></b>\n\n<b>⚜️ Powered By : <a href="https://t.me/DrBerlin_bot">[ ᴅʀᴇᴀᴍxʙᴏᴛᴢ ]</a></b>"""
+    CAPTION = """<b><a href="https://t.me/DrBerlin_bot">{file_name}</a></b>\n\n<b>⚜️ Powered By : <a href="https://t.me/DrBerlin_bot">[ JAGADEESH ]</a></b>"""
 
     
     MOVIE_UPDATE_NOTIFY_TXT = """
