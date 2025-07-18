@@ -19,7 +19,7 @@ from database.config_db import mdb
 from database.ia_filterdb import Media, Media2, get_file_details, get_search_results, get_bad_files
 import logging
 from urllib.parse import quote_plus
-from dreamxbotz.util.file_properties import get_name, get_hash
+from DrBerlin_bot.util.file_properties import get_name, get_hash
 from database.config_db import mdb
 from fuzzywuzzy import process
 
@@ -785,11 +785,11 @@ async def cb_handler(client: Client, query: CallbackQuery):
             settings = await get_settings(query.message.chat.id)
             fsub_channels = settings.get('fsub', AUTH_CHANNELS) if settings else AUTH_CHANNELS
             btn = []
-            dreamxbotz_btn = await is_subscribed(client, query, fsub_channels)
-            if dreamxbotz_btn:
-                btn.extend(dreamxbotz_btn)
-            dreamxbotz_joined = await is_req_subscribed(client, query)
-            if not dreamxbotz_joined:
+            DrBerlin_bot_btn = await is_subscribed(client, query, fsub_channels)
+            if DrBerlin_bot_btn:
+                btn.extend(DrBerlin_bot_btn)
+            DrBerlin_bot_joined = await is_req_subscribed(client, query)
+            if not DrBerlin_bot_joined:
                 try:
                     invite_link_default = await client.create_chat_invite_link(int(AUTH_REQ_CHANNEL), creates_join_request=True)
                 except ChatAdminRequired:
@@ -1433,7 +1433,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
             InputMediaPhoto('https://graph.org/file/99eebf5dbe8a134f548e0.jpg')
         )
         await query.message.edit_text(
-            text=script.DREAMXBOTZ_DONATION.format(query.from_user.mention, QR_CODE, OWNER_UPI_ID),
+            text=script.DrBerlin_bot_DONATION.format(query.from_user.mention, QR_CODE, OWNER_UPI_ID),
             reply_markup=reply_markup,
             parse_mode=enums.ParseMode.HTML
         )
@@ -1485,7 +1485,7 @@ async def cb_handler(client: Client, query: CallbackQuery):
 
     elif query.data == "source":
         buttons = [[
-            InlineKeyboardButton('ᴅʀᴇᴀᴍxʙᴏᴛᴢ 📜', url='https://github.com/DreamXBotz/Auto_Filter_Bot.git'),
+            InlineKeyboardButton('ᴅʀᴇᴀᴍxʙᴏᴛᴢ 📜', url='https://github.com/DrBerlin_bot/Auto_Filter_Bot.git'),
             InlineKeyboardButton('⇋ ʙᴀᴄᴋ ⇋', callback_data='about')
         ]]
         reply_markup = InlineKeyboardMarkup(buttons)
