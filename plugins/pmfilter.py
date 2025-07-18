@@ -19,7 +19,7 @@ from database.config_db import mdb
 from database.ia_filterdb import Media, Media2, get_file_details, get_search_results, get_bad_files
 import logging
 from urllib.parse import quote_plus
-from DrBerlin_bot.util.file_properties import get_name, get_hash
+from dreamxbotz.util.file_properties import get_name, get_hash
 from database.config_db import mdb
 from fuzzywuzzy import process
 
