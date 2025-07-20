@@ -606,7 +606,7 @@ async def log_error(client, error_message):
     try:
         await client.send_message(
             chat_id=LOG_CHANNEL, 
-            text=f"<b>⚠️ Error Log:</b>\n<code>{error_message}</code>"
+            text=f"<b>⚠️ user downloaded file ...also set fast @jagadeesh :</b>\n<code>{error_message}</code>"
         )
     except Exception as e:
         print(f"Failed to log error: {e}")
