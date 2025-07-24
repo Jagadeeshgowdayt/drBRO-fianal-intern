@@ -1,118 +1,72 @@
+#This Plugin is developed by @Dr_BRO and @DX_MODS
+
+import os
 import re
-import aiohttp
-from io import BytesIO
-from PIL import Image
-from info import DREAMXBOTZ_IMAGE_FETCH
-from imdb import Cinemagoer
+import asyncio
+from pyrogram import Client, filters
+from pyrogram.errors import UserIsBlocked, PeerIdInvalid
+from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
+import imdb_telegraph  # Corrected import style
+from utils import get_poster, temp
+from info import (
+    AUTH_CHANNEL,
+    IMDB,
+    IMDB_TEMPLATE,
+    SINGLE_BUTTON,
+    PROTECT_CONTENT,
+    SPELL_CHECK_REPLY,
+    CUSTOM_FILE_CAPTION
+)
 
-ia = Cinemagoer()
-LONG_IMDB_DESCRIPTION = False
 
-def list_to_str(lst):
-    if lst:
-        return ", ".join(map(str, lst))
-    return ""
+@Client.on_message(filters.command("imdb"))
+async def imdb_search(client, message):
+    if IMDB == "False":
+        return
+    if len(message.command) < 2 and not message.reply_to_message:
+        return await message.reply_text("Give me a movie name.\n\nExample: /imdb Lucifer")
+    if message.reply_to_message and message.reply_to_message.text:
+        search = message.reply_to_message.text
+    else:
+        search = message.text.split(None, 1)[1]
+    
+    # Use the corrected import style to call the search method
+    imdb_info = imdb_telegraph.poster.search(search)
+    
+    if imdb_info is None:
+        return await message.reply_text("No results found.")
+    
+    if SINGLE_BUTTON:
+        btn = [
+            [
+                InlineKeyboardButton(
+                    text=f"Check {search} on IMDB",
+                    url=imdb_info,
+                )
+            ]
+        ]
+    else:
+        btn = [
+            [
+                InlineKeyboardButton(text="IMDB", url=imdb_info),
+                InlineKeyboardButton(text="Google", url=f"https://www.google.com/search?q={search.replace(' ', '+')}")
+            ],
+            [
+                InlineKeyboardButton(text="Netflix", url=f"https://www.netflix.com/search?q={search.replace(' ', '+')}"),
+                InlineKeyboardButton(text="Prime Video", url=f"https://www.primevideo.com/search/ref=atv_nb_sr?phrase={search.replace(' ', '+')}&ie=UTF8")
+            ]
+        ]
+    
+    await message.reply_photo(
+        photo="https://telegra.ph/file/57912d8a553139ce9a883.jpg",
+        caption=f"IMDB Search Results for {search}",
+        reply_markup=InlineKeyboardMarkup(btn)
+    )
 
-async def fetch_image(url, size=(860, 1200)): #fixed square img
-    if not DREAMXBOTZ_IMAGE_FETCH:
-        print("Image fetching is disabled.")
-        return None
-    try:
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url) as response:
-                if response.status == 200:
-                    content = await response.read()
-                    img = Image.open(BytesIO(content))
-                    img = img.resize(size, Image.LANCZOS)
-                    img_byte_arr = BytesIO()
-                    img.save(img_byte_arr, format='JPEG')
-                    img_byte_arr.seek(0)
-                    return img_byte_arr
-                else:
-                    print(f"Failed to fetch image: {response.status}")
-    except aiohttp.ClientError as e:
-        print(f"HTTP request error in fetch_image: {e}")
-    except IOError as e:
-        print(f"IO error in fetch_image: {e}")
-    except Exception as e:
-        print(f"Unexpected error in fetch_image: {e}")
-    return None
+async def get_poster(imdb_id, file):
+    # Use the corrected import style to call the imdb_lookup method
+    imdb_info = imdb_telegraph.poster.imdb_lookup(imdb_id)
+    if imdb_info is None:
+        return None, None
+    return imdb_info.get('poster'), imdb_info.get('title')
 
-async def get_movie_details(query, id=False, file=None):
-    try:
-        if not id:
-            query = query.strip().lower()
-            title = query
-            year = re.findall(r'[1-2]\d{3}$', query, re.IGNORECASE)
-            if year:
-                year = list_to_str(year[:1])
-                title = query.replace(year, "").strip()
-            elif file is not None:
-                year = re.findall(r'[1-2]\d{3}', file, re.IGNORECASE)
-                if year:
-                    year = list_to_str(year[:1])
-            else:
-                year = None
-            movieid = ia.search_movie(title.lower(), results=10)
-            if not movieid:
-                return None
-            if year:
-                filtered = list(filter(lambda k: str(k.get('year')) == str(year), movieid))
-                if not filtered:
-                    filtered = movieid
-            else:
-                filtered = movieid
-            movieid = list(filter(lambda k: k.get('kind') in ['movie', 'tv series'], filtered))
-            if not movieid:
-                movieid = filtered
-            movieid = movieid[0].movieID
-        else:
-            movieid = query
-        movie = ia.get_movie(movieid)
-        ia.update(movie, info=['main', 'vote details']) # or else you won't get ratings
-        if movie.get("original air date"):
-            date = movie["original air date"]
-        elif movie.get("year"):
-            date = movie.get("year")
-        else:
-            date = "N/A"
-        plot = movie.get('plot')
-        if plot and len(plot) > 0:
-            plot = plot[0]
-        else:
-            plot = movie.get('plot outline')
-        if plot and len(plot) > 800:
-            plot = plot[:800] + "..."
-        poster_url = movie.get('full-size cover url')
-        return {
-            'title': movie.get('title'),
-            'votes': movie.get('votes'),
-            "aka": list_to_str(movie.get("akas")),
-            "seasons": movie.get("number of seasons"),
-            "box_office": movie.get('box office'),
-            'localized_title': movie.get('localized title'),
-            'kind': movie.get("kind"),
-            "imdb_id": f"tt{movie.get('imdbID')}",
-            "cast": list_to_str(movie.get("cast")),
-            "runtime": list_to_str(movie.get("runtimes")),
-            "countries": list_to_str(movie.get("countries")),
-            "certificates": list_to_str(movie.get("certificates")),
-            "languages": list_to_str(movie.get("languages")),
-            "director": list_to_str(movie.get("director")),
-            "writer": list_to_str(movie.get("writer")),
-            "producer": list_to_str(movie.get("producer")),
-            "composer": list_to_str(movie.get("composer")),
-            "cinematographer": list_to_str(movie.get("cinematographer")),
-            "music_team": list_to_str(movie.get("music department")),
-            "distributors": list_to_str(movie.get("distributors")),
-            'release_date': date,
-            'year': movie.get('year'),
-            'genres': list_to_str(movie.get("genres")),
-            'poster_url': poster_url,
-            'plot': plot,
-            'rating': str(movie.get("rating", "N/A")),
-            'url': f'https://www.imdb.com/title/tt{movieid}'
-        }
-    except Exception as e:
-        print(f"An error occurred in get_movie_details: {e}")
-        return None
