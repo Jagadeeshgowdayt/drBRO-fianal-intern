@@ -82,7 +82,7 @@ async def start(client, message):
     if message.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         buttons = [
     [
-        InlineKeyboardButton("🎬 Send your favorite movie name", url="https://t.me/DrBerlin_bot")
+        InlineKeyboardButton("Explore Movies 🎬", callback_data="explore_start")
     ]
 ]
         reply_markup = InlineKeyboardMarkup(buttons)
@@ -127,7 +127,7 @@ async def start(client, message):
     if len(message.command) == 2 and message.command[1] in ["subscribe", "error", "okay", "help"]:
         buttons = [
     [
-        InlineKeyboardButton("🎬 Send your favorite movie name", url="https://t.me/DrBerlin_bot")
+        InlineKeyboardButton("Explore Movies 🎬", callback_data="explore_start")
     ]
 ]
         reply_markup = InlineKeyboardMarkup(buttons)
