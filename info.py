@@ -18,9 +18,9 @@ def is_enabled(value, default):
 # Bot Information Configuration
 # ============================
 SESSION = environ.get('SESSION', 'jagadeesh')   # Session name for the bot
-API_ID = int(environ.get('API_ID', '')) # API ID from my.telegram.org
-API_HASH = environ.get('API_HASH', '')  # API Hash from my.telegram.org
-BOT_TOKEN = environ.get('BOT_TOKEN', "")    # Bot token from @BotFather
+API_ID = int(environ.get('API_ID', '4234473')) # API ID from my.telegram.orgdocker run --rm drbro-bot
+API_HASH = environ.get('API_HASH', '6d9e82c9edc244b0c0a20d8fa89f9784')  # API Hash from my.telegram.org
+BOT_TOKEN = environ.get('BOT_TOKEN', "8481088864:AAE5of3812-xW2p_Uh_JXChWVHrIgBDYhG0")    # Bot token from @BotFather
 
 # ============================
 # Bot Settings Configuration
