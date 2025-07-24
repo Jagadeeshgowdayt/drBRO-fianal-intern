@@ -9,7 +9,6 @@ from pyrogram.types import Message, InlineKeyboardMarkup, InlineKeyboardButton
 import imdb_telegraph  # Corrected import style
 from utils import get_poster, temp
 from info import (
-    AUTH_CHANNEL,
     IMDB,
     IMDB_TEMPLATE,
     SINGLE_BUTTON,
