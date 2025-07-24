@@ -1,6 +1,6 @@
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
-from imdb_telegraph import poster as imdb
+import imdb_telegraph  # Corrected import style
 
 # --- Caching for Performance ---
 # This will hold the list of top movies to avoid fetching them repeatedly.
@@ -15,8 +15,8 @@ async def get_top_movies():
     global top_movies_cache
     if not top_movies_cache:
         try:
-            # The imdb.top() function gets the top 250 movies
-            top_movies_cache = imdb.top()
+            # Use the corrected import style to call the top() method
+            top_movies_cache = imdb_telegraph.poster.top()
         except Exception as e:
             print(f"Error fetching top movies: {e}")
             top_movies_cache = []
@@ -78,17 +78,21 @@ async def explore_movies_cb(client, query):
     )
     
     try:
-        if action == "start":
+        if query.message.photo and action != "start":
+             # If the message already has a photo, edit it
+            await query.message.edit_media(
+                media={"type": "photo", "media": poster_url, "caption": caption},
+                reply_markup=keyboard
+            )
+        else:
+            # Otherwise, send a new photo message
             await query.message.reply_photo(
                 photo=poster_url,
                 caption=caption,
                 reply_markup=keyboard
             )
-        else: # For 'next', edit the existing message
-            await query.message.edit_media(
-                media={"type": "photo", "media": poster_url, "caption": caption},
-                reply_markup=keyboard
-            )
+            if action == "start":
+                await query.message.delete() # delete the original message with the button
     except Exception as e:
-        # If editing fails (e.g., no change), just answer the callback
         await query.answer(f"Error: {e}", show_alert=True)
+
