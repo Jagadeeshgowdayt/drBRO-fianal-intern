@@ -99,7 +99,7 @@ async def start(client, message):
     if len(message.command) != 2:
         buttons = [
     [
-        InlineKeyboardButton("🎬 Send your favorite movie name", url="https://t.me/DrBerlin_bot")
+        InlineKeyboardButton("Explore Movies 🎬", callback_data="explore_start")
     ]
 ]
         reply_markup = InlineKeyboardMarkup(buttons)
