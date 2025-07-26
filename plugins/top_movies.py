@@ -1,25 +1,11 @@
-import os
+# plugins/top_movies.py
+
 import asyncio
 from pyrogram import Client, filters
-from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
-from pyrogram.errors import MessageNotModified
+from pyrogram.types import Message
 from imdb import IMDb
 
-# --- ⚠️ IMPORTANT ⚠️ ---
-# --- PASTE YOUR BOT TOKEN HERE ---
-BOT_TOKEN = "YOUR_BOT_TOKEN_HERE"
-# --- AND YOUR API ID AND HASH ---
-API_ID = 12345  # REPLACE WITH YOUR API ID
-API_HASH = "YOUR_API_HASH_HERE"
-# -----------------------------------
-
-# Check if the credentials are set
-if BOT_TOKEN == "YOUR_BOT_TOKEN_HERE" or API_ID == 12345 or API_HASH == "YOUR_API_HASH_HERE":
-    print("\n[ERROR] PLEASE OPEN THE 'test_movies.py' FILE AND FILL IN YOUR BOT_TOKEN, API_ID, and API_HASH.\n")
-    exit()
-
-# Initialize the Pyrogram Client
-app = Client("movie_test_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+print("✅ GUARANTEED SOLUTION (top_movies.py) loaded.")
 
 # --- DATA ---
 MOVIE_LIST = [
@@ -28,85 +14,83 @@ MOVIE_LIST = [
     "The Lord of the Rings: The Return of the King", "Pulp Fiction",
     "The Good, the Bad and the Ugly", "Forrest Gump"
 ]
+
 ia = IMDb()
 
 # --- HANDLERS ---
-@app.on_message(filters.command("topmovies"))
-async def start_top_movies_command(client, message):
+
+@Client.on_message(filters.command("topmovies"))
+async def list_top_movies_command(client: Client, message: Message):
+    """
+    Handles the /topmovies command by sending a numbered list.
+    """
+    print(f"✅ /topmovies command received in chat {message.chat.id}")
+    
+    # Create a formatted string with the numbered list of movies
+    text = "🎬 **Here are your Top 10 Movies:**\n\n"
+    for i, title in enumerate(MOVIE_LIST, 1):
+        text += f"**{i}.** {title}\n"
+    
+    text += "\nTo get full details (including poster and rating), **just send the movie's number** (e.g., send `1`)."
+    
+    await message.reply_text(text, disable_web_page_preview=True)
+
+
+@Client.on_message(filters.text & filters.private)
+async def get_movie_details_by_number(client: Client, message: Message):
+    """
+    Handles when a user sends a number to get movie details.
+    """
+    # Check if the message text is a number between 1 and 10
+    if not message.text.isdigit():
+        return # Not a number, ignore
+        
+    number = int(message.text)
+    if not (1 <= number <= len(MOVIE_LIST)):
+        return # Number is out of range, ignore
+
+    # The index in our list is the number minus 1
+    movie_index = number - 1
+    movie_title = MOVIE_LIST[movie_index]
     chat_id = message.chat.id
-    print(f"✅ /topmovies command received in chat {chat_id}")
-    await display_movie(client, chat_id, movie_index=0, message_to_edit=None)
+    
+    print(f"✅ User wants details for movie #{number} ('{movie_title}') in chat {chat_id}")
 
-
-@app.on_callback_query()
-async def handle_all_callbacks(client, query: CallbackQuery):
-    """
-    This single handler processes all button presses for this test.
-    """
-    chat_id = query.message.chat.id
-    data = query.data
-    print(f"✅ Button pressed in chat {chat_id} with data: {data}")
-    await query.answer()
+    # Send a "thinking" message
+    loading_msg = await message.reply_text(f"Searching for *{movie_title}*...", quote=True)
 
     try:
-        parts = data.split("_")
-        action = parts[1]
-        current_index = int(parts[2])
-
-        if action == "close":
-            await query.message.delete()
-            return
-
-        new_index = current_index
-        if action == "next":
-            new_index += 1
-        elif action == "prev":
-            new_index -= 1
-
-        await display_movie(client, chat_id, movie_index=new_index, message_to_edit=query.message)
-    except Exception as e:
-        print(f"❌ ERROR in callback handler: {e}")
-
-# --- CORE LOGIC ---
-async def display_movie(client, chat_id, movie_index, message_to_edit=None):
-    try:
-        movie_title = MOVIE_LIST[movie_index]
-        print(f"🔄 Displaying '{movie_title}' (index {movie_index})...")
-
+        # --- Asynchronously fetch movie details from IMDb ---
         loop = asyncio.get_running_loop()
         search_results = await loop.run_in_executor(None, ia.search_movie, movie_title)
+        if not search_results:
+            await loading_msg.edit(f"Sorry, I couldn't find details for '{movie_title}'.")
+            return
+
         movie = search_results[0]
         await loop.run_in_executor(None, ia.update, movie)
 
+        # --- Extract details ---
         poster = movie.get('full-size cover url', 'https://i.imgur.com/B1YTE4p.jpg')
         title = movie.get('title', 'N/A')
         year = movie.get('year', 'N/A')
         rating = movie.get('rating', 'N/A')
         language = movie.get('languages', ['N/A'])[0]
-        caption = f"**{title}** ({year})\n\n**⭐ Rating:** {rating}/10\n**🗣️ Language:** {language}"
+        plot = movie.get('plot outline', 'No plot summary available.')
 
-        # Note the very specific callback_data format
-        buttons = []
-        row = []
-        if movie_index > 0:
-            row.append(InlineKeyboardButton('⬅️ Previous', callback_data=f"movie_prev_{movie_index}"))
-        if movie_index < len(MOVIE_LIST) - 1:
-            row.append(InlineKeyboardButton('Next ➡️', callback_data=f"movie_next_{movie_index}"))
-        buttons.append(row)
-        buttons.append([InlineKeyboardButton("❌ Close", callback_data=f"movie_close_{movie_index}")])
-        reply_markup = InlineKeyboardMarkup(buttons)
+        caption = (f"**🎬 Title:** {title} ({year})\n\n"
+                   f"**⭐ Rating:** {rating} / 10\n"
+                   f"**🗣️ Language:** {language}\n\n"
+                   f"**📜 Plot:** {plot}")
 
-        if message_to_edit:
-            await message_to_edit.edit_media(media=poster, caption=caption, reply_markup=reply_markup)
-        else:
-            await client.send_photo(chat_id=chat_id, photo=poster, caption=caption, reply_markup=reply_markup)
-        print(f"✅ Successfully displayed '{title}'.")
-    except MessageNotModified:
-        pass
+        # --- Send the details and delete the "loading" message ---
+        await client.send_photo(
+            chat_id=chat_id,
+            photo=poster,
+            caption=caption
+        )
+        await loading_msg.delete()
+
     except Exception as e:
-        print(f"❌ ERROR in display_movie: {e}")
-
-# --- RUN THE BOT ---
-print("Bot is starting...")
-app.run()
-print("Bot has stopped.")
+        print(f"❌ ERROR fetching details: {e}")
+        await loading_msg.edit("Sorry, an error occurred while getting the movie details.")
