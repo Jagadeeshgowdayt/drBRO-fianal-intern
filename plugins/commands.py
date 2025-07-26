@@ -82,7 +82,7 @@ async def start(client, message):
     if message.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         buttons = [
     [
-        InlineKeyboardButton("🎬 Send your favorite movie name", url="https://t.me/DrBerlin_bot")
+        InlineKeyboardButton('🌟 Explore Top 10 Movies 🌟', callback_data="start_top_movies")
     ]
 ]
         reply_markup = InlineKeyboardMarkup(buttons)
@@ -99,7 +99,7 @@ async def start(client, message):
     if len(message.command) != 2:
         buttons = [
     [
-        InlineKeyboardButton("🎬 Send your favorite movie name", url="https://t.me/DrBerlin_bot")
+        InlineKeyboardButton('🌟 Explore Top 10 Movies 🌟', callback_data="start_top_movies")
     ]
 ]
         reply_markup = InlineKeyboardMarkup(buttons)
@@ -127,7 +127,7 @@ async def start(client, message):
     if len(message.command) == 2 and message.command[1] in ["subscribe", "error", "okay", "help"]:
         buttons = [
     [
-        InlineKeyboardButton("🎬 Send your favorite movie name", url="https://t.me/DrBerlin_bot")
+        InlineKeyboardButton('🌟 Explore Top 10 Movies 🌟', callback_data="start_top_movies")
     ]
 ]
         reply_markup = InlineKeyboardMarkup(buttons)
@@ -1334,3 +1334,12 @@ async def set_fsub(client, message):
 #         print(f"Error processing reset all settings command: {str(e)}")
 #         await message.reply("<b>ᴇʀʀᴏʀ 🚫.oᴄᴄᴜʀʀᴇᴅ ᴡʜɪʟᴇ ᴅᴇʟᴇᴛɪɴɢ ɢʀᴏᴜᴘ ꜱᴇᴛᴛɪɴɢꜱ! ᴘʟᴇᴀꜱᴇ ᴛʀʏ ᴀɢᴀɪɴ ʟᴀᴛᴇʀ.</b>", quote=True)
         
+# In plugins/commands.py, at the end of the file
+
+from .top_movies import show_top_movies # Import the function from our new plugin
+
+@Client.on_callback_query(filters.regex("^start_top_movies$"))
+async def start_top_movies_callback(client, query: CallbackQuery):
+    """Handles the 'Explore Top 10 Movies' button click from the start menu."""
+    await query.answer() # Acknowledge the button press
+    await show_top_movies(client, query.message)
