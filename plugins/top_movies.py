@@ -2,6 +2,7 @@
 
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, CallbackQuery
+from pyrogram.errors import MessageNotModified
 from imdb import IMDb
 import asyncio
 
@@ -18,6 +19,8 @@ async def get_top_movies():
         print("Fetching top 250 movies from IMDb...")
         # IMDbPY's get_top250_movies is synchronous, so we run it in an executor
         loop = asyncio.get_running_loop()
+        # Fetching top 250 is slow, let's just get the top 10 directly if possible
+        # For this library, get_top250_movies is the standard way.
         movies = await loop.run_in_executor(None, ia.get_top250_movies)
         top_movies_cache = movies[:10] # We only need the top 10
     return top_movies_cache
@@ -36,16 +39,14 @@ async def show_movie_info(client, message_or_query, movie_index):
 
     # Get the specific movie from the list
     movie_id = movies[movie_index].getID()
-    # Run the synchronous ia.get_movie in an executor
     loop = asyncio.get_running_loop()
     movie = await loop.run_in_executor(None, ia.get_movie, movie_id)
 
     # --- Extract Movie Details ---
-    poster = movie.get('full-size cover url', 'https://i.imgur.com/B1YTE4p.jpg') # Default poster
+    poster = movie.get('full-size cover url', 'https://i.imgur.com/B1YTE4p.jpg')
     title = movie.get('title', 'N/A')
     year = movie.get('year', 'N/A')
     rating = movie.get('rating', 'N/A')
-    # Get the first language, if available
     languages = movie.get('languages', ['N/A'])
     language = languages[0] if languages else 'N/A'
     plot = movie.get('plot outline', 'No plot summary available.')
@@ -60,49 +61,52 @@ async def show_movie_info(client, message_or_query, movie_index):
 
     # --- Create Navigation Buttons ---
     buttons = []
-    # Logic to create '⬅️ Previous' and 'Next ➡️' buttons
     row = []
     if movie_index > 0:
         row.append(InlineKeyboardButton('⬅️ Previous', callback_data=f"topmovie_{movie_index - 1}"))
-    if movie_index < 9: # We have 10 movies (0-9)
+    if movie_index < 9:
         row.append(InlineKeyboardButton('Next ➡️', callback_data=f"topmovie_{movie_index + 1}"))
     buttons.append(row)
-
-    # Add a close button
     buttons.append([InlineKeyboardButton("❌ Close", callback_data="close_top_movies")])
-
     reply_markup = InlineKeyboardMarkup(buttons)
 
-    # --- Send or Edit the Message ---
-    if isinstance(message_or_query, CallbackQuery):
-        # If it's a button click, edit the existing message
-        await message_or_query.message.edit_media(
-            media=poster,
-            caption=caption,
-            reply_markup=reply_markup
-        )
-    else:
-        # If it's a command, send a new message
-        await client.send_photo(
-            chat_id=message_or_query.chat.id,
-            photo=poster,
-            caption=caption,
-            reply_markup=reply_markup
-        )
+    try:
+        if isinstance(message_or_query, CallbackQuery):
+            await message_or_query.message.edit_media(
+                media=poster,
+                caption=caption,
+                reply_markup=reply_markup
+            )
+        else:
+            await client.send_photo(
+                chat_id=message_or_query.chat.id,
+                photo=poster,
+                caption=caption,
+                reply_markup=reply_markup
+            )
+    except MessageNotModified:
+        # This error happens if the user clicks the same button twice quickly.
+        # We can safely ignore it.
+        pass
+    except Exception as e:
+        print(f"Error in show_movie_info: {e}")
 
 
 @Client.on_callback_query(filters.regex("^topmovie_"))
 async def top_movie_callback(client, query: CallbackQuery):
     """Handles 'Next' and 'Previous' button clicks."""
+    # ✅ CHANGE 1: Acknowledge the button press immediately.
+    await query.answer()
     try:
         movie_index = int(query.data.split("_")[1])
         await show_movie_info(client, query, movie_index)
     except Exception as e:
         print(f"Error in top_movie_callback: {e}")
-        await query.answer("Something went wrong!", show_alert=True)
 
 
 @Client.on_callback_query(filters.regex("^close_top_movies$"))
 async def close_top_movies_callback(client, query: CallbackQuery):
     """Handles the close button click."""
+    # ✅ CHANGE 2: Also acknowledge here for consistency.
+    await query.answer()
     await query.message.delete()
