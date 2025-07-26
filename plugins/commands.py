@@ -1338,11 +1338,3 @@ async def set_fsub(client, message):
 
 # REPLACE WITH THIS BLOCK
 
-from .top_movies import start_top_movies_command
-
-@Client.on_callback_query(filters.regex("^start_top_movies$"))
-async def start_top_movies_callback(client, query: CallbackQuery):
-    """Handles the 'Explore Top 10 Movies' button click from the start menu."""
-    await query.answer()
-    # Call the new correct function from top_movies.py
-    await start_top_movies_command(client, query.message)
