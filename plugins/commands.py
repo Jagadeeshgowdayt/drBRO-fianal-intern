@@ -1336,10 +1336,13 @@ async def set_fsub(client, message):
         
 # In plugins/commands.py, at the end of the file
 
-from .top_movies import show_top_movies # Import the function from our new plugin
+# REPLACE WITH THIS BLOCK
+
+from .top_movies import start_top_movies_command
 
 @Client.on_callback_query(filters.regex("^start_top_movies$"))
 async def start_top_movies_callback(client, query: CallbackQuery):
     """Handles the 'Explore Top 10 Movies' button click from the start menu."""
-    await query.answer() # Acknowledge the button press
-    await show_top_movies(client, query.message)
+    await query.answer()
+    # Call the new correct function from top_movies.py
+    await start_top_movies_command(client, query.message)
