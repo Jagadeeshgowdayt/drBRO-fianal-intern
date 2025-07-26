@@ -82,7 +82,7 @@ async def start(client, message):
     if message.chat.type in [enums.ChatType.GROUP, enums.ChatType.SUPERGROUP]:
         buttons = [
     [
-        InlineKeyboardButton('🌟 Explore Top 10 Movies 🌟', callback_data="start_top_movies")
+       ##### InlineKeyboardButton('🌟 Explore Top 10 Movies 🌟', callback_data="start_top_movies")
     ]
 ]
         reply_markup = InlineKeyboardMarkup(buttons)
@@ -99,7 +99,7 @@ async def start(client, message):
     if len(message.command) != 2:
         buttons = [
     [
-        InlineKeyboardButton('🌟 Explore Top 10 Movies 🌟', callback_data="start_top_movies")
+       ##### InlineKeyboardButton('🌟 Explore Top 10 Movies 🌟', callback_data="start_top_movies")
     ]
 ]
         reply_markup = InlineKeyboardMarkup(buttons)
@@ -127,7 +127,7 @@ async def start(client, message):
     if len(message.command) == 2 and message.command[1] in ["subscribe", "error", "okay", "help"]:
         buttons = [
     [
-        InlineKeyboardButton('🌟 Explore Top 10 Movies 🌟', callback_data="start_top_movies")
+       ##### InlineKeyboardButton('🌟 Explore Top 10 Movies 🌟', callback_data="start_top_movies")
     ]
 ]
         reply_markup = InlineKeyboardMarkup(buttons)
