@@ -1,3 +1,5 @@
+@Client.on_message(filters.command("imdbtop"))
+async def imdbtop_handler(client, message):
 from pyrogram import Client, filters
 from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
