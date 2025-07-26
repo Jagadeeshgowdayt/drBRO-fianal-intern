@@ -6,41 +6,72 @@ from pyrogram.errors import MessageNotModified
 from imdb import IMDb
 import asyncio
 
+print("✅ DEBUG: top_movies.py plugin (with hardcoded list) loaded successfully!")
+
 # Initialize the IMDbPY library
 ia = IMDb()
 
-# A dictionary to cache the top movies list to avoid frequent API calls
+# Your custom list of top movies
+HARDCODED_MOVIE_TITLES = [
+    "The Shawshank Redemption",
+    "The Godfather",
+    "The Dark Knight",
+    "The Godfather Part II",
+    "12 Angry Men",
+    "Schindler's List",
+    "The Lord of the Rings: The Return of the King",
+    "Pulp Fiction",
+    "The Good, the Bad and the Ugly",
+    "Forrest Gump"
+]
+
+# Cache to store the fetched movie objects
 top_movies_cache = []
 
-async def get_top_movies():
-    """Fetches and caches the top 10 movies from IMDb."""
+async def get_top_movies_from_list():
+    """
+    Fetches IMDb movie objects for the hardcoded list and caches them.
+    """
     global top_movies_cache
     if not top_movies_cache:
-        print("Fetching top 250 movies from IMDb...")
-        # IMDbPY's get_top250_movies is synchronous, so we run it in an executor
+        print("✅ DEBUG: Fetching details for hardcoded movie list from IMDb...")
         loop = asyncio.get_running_loop()
-        # Fetching top 250 is slow, let's just get the top 10 directly if possible
-        # For this library, get_top250_movies is the standard way.
-        movies = await loop.run_in_executor(None, ia.get_top250_movies)
-        top_movies_cache = movies[:10] # We only need the top 10
+        # Create a list to hold the movie objects
+        movie_objects = []
+        for title in HARDCODED_MOVIE_TITLES:
+            # Search for the movie
+            # We run the synchronous search in an executor to avoid blocking
+            search_results = await loop.run_in_executor(None, ia.search_movie, title)
+            if search_results:
+                # Add the first search result to our list
+                movie_objects.append(search_results[0])
+        top_movies_cache = movie_objects
+        print("✅ DEBUG: Movie cache created.")
     return top_movies_cache
 
 @Client.on_message(filters.command("topmovies"))
 async def show_top_movies(client, message):
-    """Handles the /topmovies command."""
+    print("✅ DEBUG: /topmovies command received.")
+    # Show a "loading" message because fetching all details can take a moment
+    loading_message = await message.reply_text("🎬 _Fetching your custom top 10 list..._")
     await show_movie_info(client, message, movie_index=0)
+    # Delete the "loading" message once the first movie is shown
+    await loading_message.delete()
+
 
 async def show_movie_info(client, message_or_query, movie_index):
-    """Fetches and displays a movie's info."""
-    movies = await get_top_movies()
+    """Fetches and displays a movie's info from the cached list."""
+    movies = await get_top_movies_from_list()
     if not movies or movie_index >= len(movies):
-        await message_or_query.reply_text("Couldn't retrieve top movies list.")
+        await message_or_query.reply_text("Couldn't retrieve the movie from the list.")
         return
 
-    # Get the specific movie from the list
-    movie_id = movies[movie_index].getID()
+    # Get the specific movie from our cached list
+    movie = movies[movie_index]
+
+    # --- Fetch full details for the movie ---
     loop = asyncio.get_running_loop()
-    movie = await loop.run_in_executor(None, ia.get_movie, movie_id)
+    await loop.run_in_executor(None, ia.update, movie)
 
     # --- Extract Movie Details ---
     poster = movie.get('full-size cover url', 'https://i.imgur.com/B1YTE4p.jpg')
@@ -64,7 +95,7 @@ async def show_movie_info(client, message_or_query, movie_index):
     row = []
     if movie_index > 0:
         row.append(InlineKeyboardButton('⬅️ Previous', callback_data=f"topmovie_{movie_index - 1}"))
-    if movie_index < 9:
+    if movie_index < len(movies) - 1:
         row.append(InlineKeyboardButton('Next ➡️', callback_data=f"topmovie_{movie_index + 1}"))
     buttons.append(row)
     buttons.append([InlineKeyboardButton("❌ Close", callback_data="close_top_movies")])
@@ -72,41 +103,26 @@ async def show_movie_info(client, message_or_query, movie_index):
 
     try:
         if isinstance(message_or_query, CallbackQuery):
-            await message_or_query.message.edit_media(
-                media=poster,
-                caption=caption,
-                reply_markup=reply_markup
-            )
+            await message_or_query.message.edit_media(media=poster, caption=caption, reply_markup=reply_markup)
         else:
-            await client.send_photo(
-                chat_id=message_or_query.chat.id,
-                photo=poster,
-                caption=caption,
-                reply_markup=reply_markup
-            )
+            await client.send_photo(chat_id=message_or_query.chat.id, photo=poster, caption=caption, reply_markup=reply_markup)
     except MessageNotModified:
-        # This error happens if the user clicks the same button twice quickly.
-        # We can safely ignore it.
         pass
     except Exception as e:
-        print(f"Error in show_movie_info: {e}")
-
+        print(f"❌ DEBUG: Error in show_movie_info: {e}")
 
 @Client.on_callback_query(filters.regex("^topmovie_"))
 async def top_movie_callback(client, query: CallbackQuery):
-    """Handles 'Next' and 'Previous' button clicks."""
-    # ✅ CHANGE 1: Acknowledge the button press immediately.
+    print(f"✅ DEBUG: Button pressed! Callback data: {query.data}")
     await query.answer()
     try:
         movie_index = int(query.data.split("_")[1])
         await show_movie_info(client, query, movie_index)
     except Exception as e:
-        print(f"Error in top_movie_callback: {e}")
-
+        print(f"❌ DEBUG: Error in top_movie_callback: {e}")
 
 @Client.on_callback_query(filters.regex("^close_top_movies$"))
 async def close_top_movies_callback(client, query: CallbackQuery):
-    """Handles the close button click."""
-    # ✅ CHANGE 2: Also acknowledge here for consistency.
+    print("✅ DEBUG: Close button pressed!")
     await query.answer()
     await query.message.delete()
