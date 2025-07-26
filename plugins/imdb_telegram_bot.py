@@ -1,5 +1,5 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup, Update, InputMediaPhoto
-from telegram.ext import Updater, CommandHandler, CallbackQueryHandler, CallbackContext
+from pyrogram import Client, filters
+from pyrogram.types import InlineKeyboardMarkup, InlineKeyboardButton
 
 # IMDb Top 10 data
 movies = [
@@ -68,34 +68,31 @@ movies = [
     }
 ]
 
-def start(update: Update, context: CallbackContext):
-    return send_movie(update, context, 0)
-
-def send_movie(update: Update, context: CallbackContext, idx=0):
+@Client.on_message(filters.command("imdbtop"))
+async def imdbtop_handler(client, message):
+    idx = 0
     movie = movies[idx]
     caption = f"{movie['title']} ({movie['year']})\nIMDb Rating: {movie['rating']}\n\n{movie['snippet']}"
-    keyboard = [[InlineKeyboardButton("Next ▶️", callback_data=f"next_{(idx+1)%len(movies)}")]]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-    if update.callback_query:
-        update.callback_query.edit_message_media(
-            InputMediaPhoto(media=movie['poster'], caption=caption),
-            reply_markup=reply_markup
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("Next ▶️", callback_data=f"imdbtop_{(idx+1)%len(movies)}")]
+    ])
+    await message.reply_photo(photo=movie["poster"], caption=caption, reply_markup=keyboard)
+
+@Client.on_callback_query(filters.regex(r"^imdbtop_(\d+)$"))
+async def imdbtop_callback(client, callback_query):
+    idx = int(callback_query.data.split("_")[1])
+    movie = movies[idx]
+    caption = f"{movie['title']} ({movie['year']})\nIMDb Rating: {movie['rating']}\n\n{movie['snippet']}"
+    keyboard = InlineKeyboardMarkup([
+        [InlineKeyboardButton("Next ▶️", callback_data=f"imdbtop_{(idx+1)%len(movies)}")]
+    ])
+    # Edit media/photo if possible, otherwise just edit text
+    try:
+        await callback_query.edit_message_media(
+            media=movie["poster"],
+            caption=caption,
+            reply_markup=keyboard
         )
-    else:
-        update.message.reply_photo(photo=movie['poster'], caption=caption, reply_markup=reply_markup)
-
-def button(update: Update, context: CallbackContext):
-    query = update.callback_query
-    idx = int(query.data.split("_")[1])
-    send_movie(update, context, idx)
-
-def main():
-    updater = Updater("YOUR_BOT_TOKEN", use_context=True)
-    dp = updater.dispatcher
-    dp.add_handler(CommandHandler("start", start))
-    dp.add_handler(CallbackQueryHandler(button))
-    updater.start_polling()
-    updater.idle()
-
-if __name__ == '__main__':
-    main()
+    except Exception:
+        await callback_query.edit_message_caption(caption=caption, reply_markup=keyboard)
+    await callback_query.answer()
