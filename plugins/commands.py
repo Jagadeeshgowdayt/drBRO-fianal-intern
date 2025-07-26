@@ -1334,3 +1334,6 @@ async def set_fsub(client, message):
 #         print(f"Error processing reset all settings command: {str(e)}")
 #         await message.reply("<b>ᴇʀʀᴏʀ 🚫.oᴄᴄᴜʀʀᴇᴅ ᴡʜɪʟᴇ ᴅᴇʟᴇᴛɪɴɢ ɢʀᴏᴜᴘ ꜱᴇᴛᴛɪɴɢꜱ! ᴘʟᴇᴀꜱᴇ ᴛʀʏ ᴀɢᴀɪɴ ʟᴀᴛᴇʀ.</b>", quote=True)
         
+@Client.on_message(filters.command("imdbtop"))
+async def imdbtop_handler(client, message):
+    # ...shows the first movie and the Next button...
