@@ -4,32 +4,13 @@ from pyrogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, 
 from pyrogram.errors import MessageNotModified
 from imdb import IMDb
 
-# --- ⚠️ IMPORTANT: Fill in your bot's credentials ---
-# You can get these from my.telegram.org
-API_ID = 12345  # REPLACE WITH YOUR API ID
-API_HASH = "YOUR_API_HASH_HERE"  # REPLACE WITH YOUR API HASH
-BOT_TOKEN = "YOUR_BOT_TOKEN_HERE" # REPLACE WITH YOUR BOT TOKEN
-# ----------------------------------------------------
-
-# --- SCRIPT CLASS (FROM YOUR Script.py) ---
-class script(object):
-    TOP_MOVIES_LIST_TXT = "🎬 **Here are the Top 10 Movies.**\n\nClick the button next to a movie to get its full details:"
-    
-    TOP_MOVIE_BUTTON_TEXT = "Details for '{title}'"
-
-    TOP_MOVIE_DETAIL_TXT = """<b>🎬 Title:</b> <a href="{url}">{title}</a> ({year})
-
-<b>⭐ Rating:</b> {rating} / 10
-<b>🎭 Genres:</b> {genres}
-<b>🗣️ Language:</b> {language}
-
-<b>📜 Plot:</b> {plot}"""
+# Import the main 'script' class from your project's Script.py file
+from Script import script 
 
 # A unique prefix for buttons to avoid conflicts with other plugins
-BUTTON_PREFIX = "movie_detail"
+BUTTON_PREFIX = "topmovies_detail"
 
-# Initialize the Pyrogram Client and IMDb
-app = Client("movie_details_bot", api_id=API_ID, api_hash=API_HASH, bot_token=BOT_TOKEN)
+# Initialize IMDb
 ia = IMDb()
 
 # List of all the movies you want to feature
@@ -40,20 +21,19 @@ MOVIE_LIST = [
     "The Good, the Bad and the Ugly", "Forrest Gump"
 ]
 
-@app.on_message(filters.command("topmovies"))
+@Client.on_message(filters.command("topmovies"))
 async def list_movies_with_buttons(client: Client, message: Message):
     """
-    Sends a list of movies, each with its own 'Show Details' button, using text from the script class.
+    Sends a list of movies, each with its own 'Show Details' button.
     """
     print(f"✅ /topmovies command received in chat {message.chat.id}")
     
-    # Use the text from the script class
-    text = script.TOP_MOVIES_LIST_TXT
+    text = "🎬 **Here are the Top 10 Movies.**\n\nClick the button next to a movie to get its full details:"
     
-    # Create a list of buttons, one for each movie
     buttons = []
     for i, title in enumerate(MOVIE_LIST):
-        button_text = script.TOP_MOVIE_BUTTON_TEXT.format(title=title)
+        button_text = f"Details for '{title}'"
+        # Corrected callback_data format
         button = InlineKeyboardButton(
             text=button_text,
             callback_data=f"{BUTTON_PREFIX}_{i}"
@@ -61,22 +41,27 @@ async def list_movies_with_buttons(client: Client, message: Message):
         buttons.append([button])
 
     reply_markup = InlineKeyboardMarkup(buttons)
-    await message.reply_text(text, reply_markup=reply_markup)
+    # Always reply to the chat where the command was sent
+    await client.send_message(chat_id=message.chat.id, text=text, reply_markup=reply_markup)
 
 
-@app.on_callback_query(filters.regex(f"^{BUTTON_PREFIX}_"))
+@Client.on_callback_query(filters.regex(f"^{BUTTON_PREFIX}_"))
 async def show_movie_details(client: Client, query: CallbackQuery):
     """
-    Handles when a user clicks a 'Show Details' button and uses the script class for the caption.
+    Handles when a user clicks a 'Show Details' button.
     """
-    await query.answer("Fetching details...")
+    await query.answer("Fetching details...", show_alert=False)
     
+    # Always use the chat_id from the query's message
     chat_id = query.message.chat.id
     try:
+        # --- CORRECTED: Parsing the movie index ---
+        # "topmovies_detail_0" split by "_" -> ["topmovies", "detail", "0"]
+        # The index is at position 2.
         movie_index = int(query.data.split("_")[2])
         movie_title = MOVIE_LIST[movie_index]
 
-        print(f"✅ User requested details for '{movie_title}' in chat {chat_id}")
+        print(f"✅ User {query.from_user.id} requested details for '{movie_title}' in chat {chat_id}")
 
         # --- Fetch movie details from IMDb ---
         loop = asyncio.get_running_loop()
@@ -88,31 +73,30 @@ async def show_movie_details(client: Client, query: CallbackQuery):
         movie = search_results[0]
         await loop.run_in_executor(None, ia.update, movie)
 
-        # --- Extract and format details ---
-        poster = movie.get('full-size cover url', 'https://placehold.co/600x900/1e293b/ffffff?text=Poster+Not+Found')
+        # --- Use the IMDB_TEMPLATE_TXT from your Script.py for the caption ---
         title = movie.get('title', 'N/A')
+        genres = ', '.join(movie.get('genres', ['N/A']))
         year = movie.get('year', 'N/A')
         rating = movie.get('rating', 'N/A')
-        language = movie.get('languages', ['N/A'])[0]
-        plot = movie.get('plot outline', 'No plot summary available.')
-        genres = ', '.join(movie.get('genres', ['N/A']))
         imdb_url = f"https://www.imdb.com/title/tt{movie.movieID}"
 
-        # Use the template from the script class to create the caption
-        caption = script.TOP_MOVIE_DETAIL_TXT.format(
+        # --- CORRECTED: Passing the correct object to .format() ---
+        # The 'message' key in your template expects an object with a 'from_user.mention' attribute.
+        # The 'query' object has this, so we pass it directly.
+        caption = script.IMDB_TEMPLATE_TXT.format(
             url=imdb_url,
             title=title,
+            genres=genres,
             year=year,
             rating=rating,
-            genres=genres,
-            language=language,
-            plot=plot
+            remaining_seconds=0, 
+            message=query 
         )
 
         # --- Send a new message with the movie details ---
         await client.send_photo(
             chat_id=chat_id,
-            photo=poster,
+            photo=movie.get('full-size cover url', 'https://placehold.co/600x900/1e293b/ffffff?text=Poster+Not+Found'),
             caption=caption,
             reply_to_message_id=query.message.id 
         )
@@ -120,12 +104,3 @@ async def show_movie_details(client: Client, query: CallbackQuery):
     except Exception as e:
         print(f"❌ An error occurred in show_movie_details: {e}")
         await client.send_message(chat_id, "Sorry, an error occurred while fetching the details.")
-
-
-if __name__ == "__main__":
-    if BOT_TOKEN == "YOUR_BOT_TOKEN_HERE" or API_ID == 12345 or API_HASH == "YOUR_API_HASH_HERE":
-        print("\n[ERROR] PLEASE OPEN THE SCRIPT AND FILL IN YOUR BOT_TOKEN, API_ID, and API_HASH.\n")
-    else:
-        print("Bot is starting...")
-        app.run()
-        print("Bot has stopped.")
