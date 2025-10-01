@@ -325,7 +325,7 @@ def extract_request_content(message_text):
     return message_text.strip()
 
 def generate_settings_text(settings, title, reset_done=False):
-    note = "\n<b>📌 ɴᴏᴛᴇ :- ʀᴇꜱᴇᴛ ꜱᴜᴄᴄᴇꜱꜱғᴜʟʟʏ ✅</b>" if reset_done else ""
+    note = "\n<b>📌 ɴᴏᴛᴇ :- ʀᴇꜱᴇᴛ ꜱᴜᴄᴄᴇꜱꜱғᴜʟʟʎ ✅</b>" if reset_done else ""
     return f"""<b>⚙️ ʏᴏᴜʀ sᴇᴛᴛɪɴɢs ꜰᴏʀ - {title}</b>
 
 ✅️ <b><u>1sᴛ ᴠᴇʀɪꜰʏ sʜᴏʀᴛɴᴇʀ</u></b>
@@ -772,4 +772,4 @@ async def get_cap(settings, remaining_seconds, files, query, total_results, sear
     except Exception as e:
         logging.error(f"Error in get_cap: {e}")
         pass
-       
+

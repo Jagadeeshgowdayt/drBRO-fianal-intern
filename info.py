@@ -18,9 +18,9 @@ def is_enabled(value, default):
 # Bot Information Configuration
 # ============================
 SESSION = environ.get('SESSION', 'jagadeesh')   # Session name for the bot
-API_ID = int(environ.get('API_ID', '')) # API ID from my.telegram.org
-API_HASH = environ.get('API_HASH', '')  # API Hash from my.telegram.org
-BOT_TOKEN = environ.get('BOT_TOKEN', "")    # Bot token from @BotFather
+API_ID = int(environ.get('API_ID', '16564172')) # API ID from my.telegram.org
+API_HASH = environ.get('API_HASH', 'f0184f4c1bad2efdc2f59b8591c7a839')  # API Hash from my.telegram.org
+BOT_TOKEN = environ.get('BOT_TOKEN', "8281550081:AAGS2m5jW4gmQ21dd82ic3tEbJM7Uxnd750")    # Bot token from @BotFather
 
 # ============================
 # Bot Settings Configuration
@@ -42,14 +42,14 @@ FSUB_PICS = (environ.get('FSUB_PICS', 'https://graph.org/file/7478ff3eac37f4329c
 # Admin, Channels & Users Configuration
 # ============================
 ADMINS = [int(admin) if id_pattern.search(admin) else admin for admin in environ.get('ADMINS', '1946827941').split()] # Replace with the actual admin ID(s) to add
-CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '').split()]  # Channel id for auto indexing (make sure bot is admin)
+CHANNELS = [int(ch) if id_pattern.search(ch) else ch for ch in environ.get('CHANNELS', '-1002723371583').split()]  # Channel id for auto indexing (make sure bot is admin)
 
-LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1002388027077'))  # Log channel id (make sure bot is admin)
-BIN_CHANNEL = int(environ.get('BIN_CHANNEL', '-1002743096144'))  # Bin channel id (make sure bot is admin)
+LOG_CHANNEL = int(environ.get('LOG_CHANNEL', '-1002832393534'))  # Log channel id (make sure bot is admin)
+BIN_CHANNEL = int(environ.get('BIN_CHANNEL', '-1002832393534'))  # Bin channel id (make sure bot is admin)
 PREMIUM_LOGS = int(environ.get('PREMIUM_LOGS', '-100'))  # Premium logs channel id
 DELETE_CHANNELS = [int(dch) if id_pattern.search(dch) else dch for dch in environ.get('DELETE_CHANNELS', '-100').split()] #(make sure bot is admin)
-support_chat_id = environ.get('SUPPORT_CHAT_ID', '-1002388027077')  # Support group id (make sure bot is admin)
-reqst_channel = environ.get('REQST_CHANNEL_ID', '-1002388027077')  # Request channel id (make sure bot is admin)
+support_chat_id = environ.get('SUPPORT_CHAT_ID', '-1002832393534')  # Support group id (make sure bot is admin)
+reqst_channel = environ.get('REQST_CHANNEL_ID', '-1002832393534')  # Request channel id (make sure bot is admin)
 SUPPORT_CHAT = environ.get('SUPPORT_CHAT', 'https://t.me/')  # Support group link (make sure bot is admin)
 
 # FORCE_SUB 
@@ -62,7 +62,7 @@ AUTH_CHANNELS = [int(channels_id) for channels_id in environ.get('AUTH_CHANNELS'
 # Payment Configuration
 # ============================
 QR_CODE = environ.get('QR_CODE', 'https://graph.org/file/e419f801841c2ee3db0fc.jpg')    # QR code image for payments
-OWNER_UPI_ID = environ.get('OWNER_UPI_ID', 'ɴᴏ ᴀᴠᴀɪʟᴀʙʟᴇ ʀɪɢʜᴛ ɴᴏᴡ')    # Owner UPI ID for payments
+OWNER_UPI_ID = environ.get('OWNER_UPI_ID', 'ɴᴏ ᴀᴠᴀɪʟᴀʙʟᴇ ʀɪɡʜᴛ ɴᴏᴡ')    # Owner UPI ID for payments
 
 STAR_PREMIUM_PLANS = {
     10: "7day",
@@ -75,9 +75,9 @@ STAR_PREMIUM_PLANS = {
 # ============================
 # MongoDB Configuration
 # ============================
-DATABASE_URI = environ.get('DATABASE_URI', "")  # MongoDB URI for the database
-DATABASE_NAME = environ.get('DATABASE_NAME', "") # Database name (default: cluster)
-COLLECTION_NAME = environ.get('COLLECTION_NAME', '') # Collection name (default: dreamcinezone_files)
+DATABASE_URI = environ.get('DATABASE_URI', "mongodb+srv://jagadeesh:jagadeesh@jagadeesh.i5ahqij.mongodb.net/?retryWrites=true&w=majority&appName=jagadeesh")  # MongoDB URI for the database
+DATABASE_NAME = environ.get('DATABASE_NAME', "jagadeesh") # Database name (default: cluster)
+COLLECTION_NAME = environ.get('COLLECTION_NAME', 'jagadeesh') # Collection name (default: dreamcinezone_files)
 
 # If MULTIPLE_DB Is True Then Fill DATABASE_URI2 Value Else You Will Get Error.
 MULTIPLE_DB = is_enabled(os.environ.get('MULTIPLE_DB', "False"), False) # Type True For Turn On MULTIPLE DB FUNTION 
@@ -95,7 +95,7 @@ ABOVE_PREVIEW = bool(environ.get('ABOVE_PREVIEW', True)) # Shows link preview ab
 # ============================
 # Verification Settings
 # ============================
-IS_VERIFY = is_enabled('IS_VERIFY', True)  # Verification On (True) / Off (False)
+IS_VERIFY = is_enabled('IS_VERIFY', False)  # Verification On (True) / Off (False)
 LOG_VR_CHANNEL = int(environ.get('LOG_VR_CHANNEL', '-1002388027077')) #Verification Channel Id 
 LOG_API_CHANNEL = int(environ.get('LOG_API_CHANNEL', '-1002388027077'))#If Anyone Set Your Bot In Any Group And Set Shortner In That Group Then In This Channel The All Details Come
 VERIFY_IMG = environ.get("VERIFY_IMG", "https://telegra.ph/file/9ecc5d6e4df5b83424896.jpg")
@@ -155,7 +155,7 @@ MELCOW_NEW_USERS = is_enabled((environ.get('MELCOW_NEW_USERS', "False")), False)
 PROTECT_CONTENT = is_enabled((environ.get('PROTECT_CONTENT', "False")), False) # Protect Content On (True) / Off (False)
 PM_SEARCH = bool(environ.get('PM_SEARCH', True))  # PM Search On (True) / Off (False)
 EMOJI_MODE = bool(environ.get('EMOJI_MODE', False))  # Emoji status On (True) / Off (False)
-BUTTON_MODE = is_enabled((environ.get('BUTTON_MODE', "True")), True) # pm & Group button or link mode (True) / Off (False)
+BUTTON_MODE = is_enabled((environ.get('BUTTON_MODE', "False")), False) # pm & Group button or link mode (True) / Off (False)
 STREAM_MODE = bool(environ.get('STREAM_MODE', False)) # Set Stream mode True or False
 
 # ============================
