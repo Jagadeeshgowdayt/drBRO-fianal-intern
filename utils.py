@@ -300,6 +300,9 @@ def clean_filename(file_name):
         word for word in file_name.split()
         if not (word.startswith(prefixes) or word.lower() in unwanted)
     )
+    # Truncate long filenames to make movie titles smaller
+    if len(file_name) > 60:
+        file_name = file_name[:60] + "..."
     return file_name
 
 def get_size(size):
