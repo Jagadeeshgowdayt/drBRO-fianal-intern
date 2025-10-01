@@ -133,6 +133,50 @@ async def refercall(bot, query):
         )
     await query.answer()
 
+@Client.on_callback_query(filters.regex(r"^generate_stream_link"))
+async def generate_stream_link_handler(bot, query):
+    """Handle the Download Now button click and generate streaming links"""
+    try:
+        # Extract file_id from callback data
+        _, file_id = query.data.split(":", 1)
+        
+        # Get the file details from database
+        files = await get_file_details(file_id)
+        if not files:
+            return await query.answer("⚠️ File not found!", show_alert=True)
+        
+        # Get the first file
+        file = files[0]
+        
+        # Get the message that was sent with the file
+        # The callback query message is the message with the file
+        file_msg = query.message
+        
+        # Generate streaming URLs
+        file_name = get_name(file_msg)
+        file_hash = get_hash(file_msg)
+        
+        # Generate download and stream links
+        dreamx_stream = f"{URL}watch/{file_hash}{file_msg.id}"
+        dreamx_download = f"{URL}{file_msg.id}/{quote_plus(file_name)}?hash={file_hash}"
+        
+        # Send the links to user
+        btn = [
+            [InlineKeyboardButton("🚀 Fast Download 🚀", url=dreamx_download)],
+            [InlineKeyboardButton('🖥️ Watch Online 🖥️', url=dreamx_stream)]
+        ]
+        
+        await query.message.reply_text(
+            text=f"•• ʟɪɴᴋ ɢᴇɴᴇʀᴀᴛᴇᴅ ☠︎⚔\n\n📁 ꜰɪʟᴇ ɴᴀᴍᴇ: {file_name}\n\n⚡ ᴄʟɪᴄᴋ ᴏɴ ᴛʜᴇ ʙᴜᴛᴛᴏɴꜱ ʙᴇʟᴏᴡ ᴛᴏ ᴅᴏᴡɴʟᴏᴀᴅ ᴏʀ ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ",
+            reply_markup=InlineKeyboardMarkup(btn),
+            quote=True
+        )
+        await query.answer("✅ Links generated successfully!")
+        
+    except Exception as e:
+        logger.error(f"Error in generate_stream_link_handler: {e}")
+        await query.answer("⚠️ Error generating links. Please try again.", show_alert=True)
+
 @Client.on_callback_query(filters.regex(r"^next"))
 async def next_page(bot, query):
     ident, req, key, offset = query.data.split("_")

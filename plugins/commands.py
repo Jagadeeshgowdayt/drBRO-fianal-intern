@@ -317,7 +317,7 @@ async def start(client, message):
         
         filesarr = []
         sent_count = 0
-        max_files_per_group = 50
+        max_files_per_group = 100  # Increased from 50 to send more files
         
         # Group by quality and language for organized sending
         organized_files = organize_files_by_quality(files[:max_files_per_group])
@@ -347,7 +347,7 @@ async def start(client, message):
                     
                 if STREAM_MODE:
                     btn = [
-                        [InlineKeyboardButton('🚀 ꜰᴀꜱᴛ ᴅᴏᴡɴʟᴏᴀᴅ / ᴡᴀᴛᴄʜ ᴏɴʟɪɴᴇ 🖥️', callback_data=f'generate_stream_link:{file_id}')],
+                        [InlineKeyboardButton('📥 Download Now', callback_data=f'generate_stream_link:{file_id}')],
                         [InlineKeyboardButton('📌 ᴊᴏɪɴ ᴜᴘᴅᴀᴛᴇꜱ ᴄʜᴀɴɴᴇʟ 📌', url=UPDATE_CHNL_LNK)]
                     ]
                 else:
@@ -374,7 +374,7 @@ async def start(client, message):
             summary_text = (
                 f"<b><u>📥 FILES SENT SUCCESSFULLY 📥</u></b>\n\n"
                 f"✅ Sent: <code>{sent_count}</code> files\n"
-                f"📊 Total Available: <code>{total_files</code> files\n\n"
+                f"📊 Total Available: <code>{total_files}</code> files\n\n"
                 f"<b><u>❗️❗️❗️IMPORTANT❗️️❗️❗️</u></b>\n"
                 f"ᴛʜᴇꜱᴇ ꜰɪʟᴇꜱ ᴡɪʟʟ ʙᴇ ᴅᴇʟᴇᴛᴇᴅ ɪɴ <b><u><code>{get_time(DELETE_TIME)}</code></u> 🫥</b>\n"
                 f"<i>(ᴅᴜᴇ ᴛᴏ ᴄᴏᴘʏʀɪɡʜᴛ ɪꜱꜱᴜᴇꜱ)</i>\n\n"
@@ -496,13 +496,6 @@ async def requests(bot, message):
                 InlineKeyboardButton('ᴠɪᴇᴡ ʀᴇǫᴜᴇꜱᴛ', url=f"{reported_post.link}")
               ]]
         await message.reply_text("<b>ʏᴏᴜʀ  ʀᴇǫᴜᴇꜱᴛ ʜᴀꜱ ʙᴇᴇɴ ᴀᴅᴅᴇᴅ! ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ ꜰᴏʀ ꜱᴏᴍᴇ ᴛɪᴍᴇ.\n\nᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰɪʀꜱᴛ & ᴠɪᴇᴡ ʀᴇǫᴜᴇꜱᴛ.</b>", reply_markup=InlineKeyboardMarkup(btn))
-            f"ᴜꜱᴇʀ - {mention} ꜱᴇᴛ ᴛʜᴇ ꜰᴏʀᴄᴇ ᴄʜᴀɴɴᴇʟ(ꜱ) ꜰᴏʀ {title}:\n\n"
-            f"ꜰꜱᴜʙ ᴄʜᴀɴɴᴇʟ(ꜱ):\n" + '\n'.join(channel_titles)
-        
-        await message.reply_text(f"sᴜᴄᴄᴇssғᴜʟʟʏ sᴇᴛ ғᴏʀᴄᴇ ᴄʜᴀɴɴᴇʟ(ꜱ) ғᴏʀ {title} ᴛᴏ\n\n{channels}")
-    except Exception as e:
-        err_text = f"⚠️ Error in set_fSub :\n{e}"
-        await client.send_message(LOG_API_CHANNEL, err_text)
 
 # @Client.on_message(filters.private & filters.command("resetall") & filters.user(ADMINS))
 # async def reset_all_settings(client, message):
@@ -1028,21 +1021,8 @@ async def save_template(client, message):
     await sts.edit(
         f"✅ ꜱᴜᴄᴄᴇꜱꜱꜰᴜʟʟʏ ᴜᴘᴅᴀᴛᴇᴅ ᴛᴇᴍᴘʟᴀᴛᴇ ꜰᴏʀ <code>{title}</code> ᴛᴏ:\n\n{template}"
     )
-            text += '\n@' + chat.username
-        else:
-            text += '\n' + chat.title or chat.first_name
 
-    text += f'\n\n**ᴛᴏᴛᴀʟ :** {len(CHANNELS)}'
-
-    if len(text) < 4096:
-        await message.reply(text)
-    else:
-        file = 'Indexed channels.txt'
-        with open(file, 'w') as f:
-            f.write(text)
-        await message.reply_document(file)
-        os.remove(file)
-
+# Other helper functions or commands below
 
 @Client.on_message(filters.command('logs') & filters.user(ADMINS))
 async def log_file(bot, message):
@@ -1305,13 +1285,6 @@ async def requests(bot, message):
                 InlineKeyboardButton('ᴠɪᴇᴡ ʀᴇǫᴜᴇꜱᴛ', url=f"{reported_post.link}")
               ]]
         await message.reply_text("<b>ʏᴏᴜʀ  ʀᴇǫᴜᴇꜱᴛ ʜᴀꜱ ʙᴇᴇɴ ᴀᴅᴅᴇᴅ! ᴘʟᴇᴀꜱᴇ ᴡᴀɪᴛ ꜰᴏʀ ꜱᴏᴍᴇ ᴛɪᴍᴇ.\n\nᴊᴏɪɴ ᴄʜᴀɴɴᴇʟ ꜰɪʀꜱᴛ & ᴠɪᴇᴡ ʀᴇǫᴜᴇꜱᴛ.</b>", reply_markup=InlineKeyboardMarkup(btn))
-            f"ᴜꜱᴇʀ - {mention} ꜱᴇᴛ ᴛʜᴇ ꜰᴏʀᴄᴇ ᴄʜᴀɴɴᴇʟ(ꜱ) ꜰᴏʀ {title}:\n\n"
-            f"ꜰꜱᴜʙ ᴄʜᴀɴɴᴇʟ(ꜱ):\n" + '\n'.join(channel_titles)
-        )
-        await message.reply_text(f"sᴜᴄᴄᴇssғᴜʟʟʏ sᴇᴛ ғᴏʀᴄᴇ ᴄʜᴀɴɴᴇʟ(ꜱ) ғᴏʀ {title} ᴛᴏ\n\n{channels}")
-    except Exception as e:
-        err_text = f"⚠️ Error in set_fSub :\n{e}"
-        await client.send_message(LOG_API_CHANNEL, err_text)
 
 # @Client.on_message(filters.private & filters.command("resetall") & filters.user(ADMINS))
 # async def reset_all_settings(client, message):
